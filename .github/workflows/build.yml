@@ -1,0 +1,38 @@
+name: 编译Newifi D2 ImmortalWrt
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取ImmortalWrt源码
+        run: git clone https://github.com/immortalwrt/immortalwrt.git openwrt
+
+      - name: 添加Passwall2全套软件源
+        working-directory: ./openwrt
+        run: |
+          cat >> feeds.conf.default <<EOF
+src-git passwall_packages https://github.com/xiaorouji/openwrt-passwall-packages.git;main
+src-git passwall https://github.com/xiaorouji/openwrt-passwall.git;main
+src-git passwall2 https://github.com/xiaorouji/openwrt-passwall2.git;main
+EOF
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: 载入编译配置文件
+        run: cp .config openwrt/.config
+
+      - name: 同步配置
+        working-directory: ./openwrt
+        run: make defconfig
+
+      - name: 开始编译固件
+        working-directory: ./openwrt
+        run: make -j$(nproc) V=s
+
+      - name: 上传生成的固件
+        uses: actions/upload-artifact@v4
+        with:
+          name: Newifi-D2固件-PW2内置
+          path: openwrt/bin/targets/ramips/mt7621/*.bin
