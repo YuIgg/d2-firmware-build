@@ -1,53 +1,10 @@
-name: 编译Newifi D2 ImmortalWrt
+name: 测试手动工作流
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository files
-        uses: actions/checkout@v4
-
-      - name: Install build dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y build-essential libncurses-dev libssl-dev bison flex python3 python3-distutils git wget unzip
-
-      - name: Clone ImmortalWrt source
-        run: git clone --depth=1 https://github.com/immortalwrt/immortalwrt.git openwrt
-
-      - name: 写入passwall软件源1
-        working-directory: ./openwrt
-        run: echo "src-git passwall_packages https://github.com/xiaorouji/openwrt-passwall-packages.git;main" >> feeds.conf.default
-
-      - name: 写入passwall软件源2
-        working-directory: ./openwrt
-        run: echo "src-git passwall https://github.com/xiaorouji/openwrt-passwall.git;main" >> feeds.conf.default
-
-      - name: 写入passwall软件源3
-        working-directory: ./openwrt
-        run: echo "src-git passwall2 https://github.com/xiaorouji/openwrt-passwall2.git;main" >> feeds.conf.default
-
-      - name: 更新与安装feeds
-        working-directory: ./openwrt
-        run: |
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a
-
-      - name: 载入编译配置文件
-        run: cp .config openwrt/.config
-
-      - name: make defconfig
-        working-directory: ./openwrt
-        run: make defconfig
-
-      - name: Compile firmware
-        working-directory: ./openwrt
-        run: make -j2 V=s
-
-      - name: Upload firmware artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Newifi-D2固件-PW2内置
-          path: openwrt/bin/targets/ramips/mt7621/*.bin
+      - name: 测试输出
+        run: echo "工作流加载正常"
