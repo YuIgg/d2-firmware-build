@@ -11,34 +11,47 @@ jobs:
       - name: Checkout repository files
         uses: actions/checkout@v4
 
-      - name: 【调试】列出仓库根目录全部文件
+      - name: 调试-列出仓库根目录全部文件
         run: ls -la
 
-      - name: Install build dependencies
+      - name: 安装依赖 + 配置Git全局镜像加速
         run: |
           set -x
           sudo apt update
           sudo apt install -y build-essential libncurses-dev libssl-dev bison flex python3 python3-distutils git wget unzip
+          # 全局自动替换github.com => gitcode镜像，所有git clone/feeds拉取全部加速
+          git config --global url."https://gitcode.com/gh_mirrors/".insteadOf "https://github.com/"
+          git config --global http.postBuffer 524288000
 
-      - name: Clone ImmortalWrt source
+      - name: Clone ImmortalWrt源码
         run: |
           set -x
           git clone --depth=1 https://github.com/immortalwrt/immortalwrt.git openwrt
 
-      - name: 添加Passwall2全套软件源
+      - name: 写入Passwall2全套feeds源
         working-directory: ./openwrt
         run: |
           set -x
           echo "src-git passwall_packages https://github.com/xiaorouji/openwrt-passwall-packages.git;main" >> feeds.conf.default
           echo "src-git passwall https://github.com/xiaorouji/openwrt-passwall.git;main" >> feeds.conf.default
           echo "src-git passwall2 https://github.com/xiaorouji/openwrt-passwall2.git;main" >> feeds.conf.default
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a
 
-      - name: 载入编译配置文件
+      - name: feeds update -a
+        working-directory: ./openwrt
         run: |
           set -x
-          cp .config openwrt/.config
+          ./scripts/feeds update -a
+
+      - name: feeds install -a
+        working-directory: ./openwrt
+        run: |
+          set -x
+          ./scripts/feeds install -a
+
+      - name: 复制编译配置 .config
+        run: |
+          set -x
+          cp -v .config openwrt/.config
 
       - name: make defconfig
         working-directory: ./openwrt
@@ -46,13 +59,13 @@ jobs:
           set -x
           make defconfig
 
-      - name: Compile firmware
+      - name: 编译固件
         working-directory: ./openwrt
         run: |
           set -x
           make -j2 V=s
 
-      - name: Upload firmware artifact
+      - name: 上传固件成品
         uses: actions/upload-artifact@v4
         with:
           name: Newifi-D2固件-PW2内置
