@@ -6,6 +6,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential libncurses-dev libssl-dev \
+          bison flex python3 python3-distutils git wget unzip
+
       - name: 拉取ImmortalWrt源码
         run: git clone https://github.com/immortalwrt/immortalwrt.git openwrt
 
