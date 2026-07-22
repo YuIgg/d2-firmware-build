@@ -18,8 +18,7 @@ jobs:
         run: |
           set -x
           sudo apt update
-          sudo apt install -y build-essential libncurses-dev libssl-dev bison flex python3 python3-distutils git wget unzip
-          # 全局自动替换github.com => gitcode镜像，所有git clone/feeds拉取全部加速
+          sudo apt install -y build-essential libncurses-dev libssl-dev bison flex python3 python3-dev git wget unzip
           git config --global url."https://gitcode.com/gh_mirrors/".insteadOf "https://github.com/"
           git config --global http.postBuffer 524288000
 
